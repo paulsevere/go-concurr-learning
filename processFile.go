@@ -3,10 +3,9 @@ package main
 import (
 	"bufio"
 	"os"
-	"strings"
 )
 
-func readLines(path string, query string, ch chan Match) {
+func readLines(path string, ch chan Match, cb func(line string, lineNum int, path string) []Match) {
 	file, err := os.Open(path)
 	count := 0
 	if err != nil {
@@ -16,10 +15,9 @@ func readLines(path string, query string, ch chan Match) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		count += 1
-		pos := strings.Index(scanner.Text(), query)
-		if pos > -1 {
-			mat := Match{pos: pos, line: count, filename: path}
-			ch <- mat
+		matches := cb(scanner.Text(), count, path)
+		for _, x := range matches {
+			ch <- x
 		}
 
 	}
